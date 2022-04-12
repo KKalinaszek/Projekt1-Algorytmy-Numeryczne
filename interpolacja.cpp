@@ -137,7 +137,7 @@ vector<double> coeff(vector<double>& x, vector<vector<double> >& data) {
             else {                                                                                                // i jeden powy¿ej i dzielimy przez ró¿nicê jak we wzorze
                 int k = j;
                 while (t[k] == t[k - 1]) k--;           // jesli pierwsze i ostatnie t sa rowne to bierzemy wartosc pochodnej z
-                matrix[i][j] = data_list[k + i] / fact(i);  // wczesniej utworzonej listy  i dzielimy przez silnie
+                matrix[i][j] = data_list[k + 2 * i - 1] / fact(i);  // wczesniej utworzonej listy  i dzielimy przez silnie
             }
         }
     }
