@@ -29,14 +29,72 @@ vector<double> addPoly(vector<double>& p1, vector<double>& p2) {
     int s = max(p1.size(), p2.size()) - 1;
     vector<double> outcome(s + 1, 0);
     if (p1.size() >= p2.size()) {
-        for (int i = s; i >= 0; i--)
+        int i;
+        for (i = s; i >= s - (int)p2.size() - 1; i--)
             outcome[i] += (p1[i] + p2[i - s + p2.size() - 1]);
+        i++;
+        for (; i >= 0; i--)
+            outcome[i] = p1[i];
     }
     else {
-        for (int i = s; i >= 0; i--)
-            outcome[i] += p2[i] + p1[i - s + p1.size() - 1];
+        int i;
+        for (i = s; i >= s - (int)p1.size(); i--)
+            outcome[i] += (p2[i] + p1[i - s + p1.size() - 1]);
+        i++;
+        for (; i >= 0; i--)
+            outcome[i] = p2[i];
     }
     return outcome;
+}
+
+void displayPoly(vector<double>& poly) {
+    int i = poly.size() - 1;
+    for (double a : poly) {
+        if (a == 0) continue;
+        if (i < (int)poly.size() - 1) {
+            if (a >= 0)
+                cout << " + ";
+            else {
+                cout << " - ";
+                a = -a;
+            }
+        }
+        if (i > 1) {
+            if(a == 1)
+                cout << "x^" << i;
+            else if(a == -1)
+                cout << "-x^" << i;
+            else
+                cout << a << "x^" << i;
+        }
+        else if (i == 1){
+            if(a == 1)
+                cout << "x";
+            else if(a == -1)
+                cout << "-x^" << i;
+            else
+                cout << a << "x";
+        }
+        else
+            cout << a;
+        i--;
+    }
+    cout << endl;
+}
+
+vector<double> calculatePoly(vector<double>& t, vector<double>& coeff) {
+    vector<double> finalPoly{0};
+    int i = 0;
+    for (double& b : coeff) {
+        vector<double> curPoly = {b};
+        for (int j = 0; j < i; j++) {
+            vector<double> tx {1, -t[j]};
+            curPoly = multiPoly(curPoly, tx);
+        }
+        i++;
+        finalPoly = addPoly(finalPoly, curPoly);
+    }
+    return finalPoly;
 }
 
 vector<double> convert(vector<vector<double> >& data) {
@@ -60,41 +118,44 @@ vector<double> build_t(vector<double>& x, vector<vector<double> >& data) {
 vector<double> coeff(vector<double>& x, vector<vector<double> >& data) {
     vector<double> data_list = convert(data); // zmieniamy tablicê 2d z wartoœciami w listê wartoœci
     vector<vector<double> > matrix; // tworzymy strukture do zapamietywania wczesniej policzonych ilorazow
-    matrix.push_back(build_t(x, data)); // w pierwszej kolumnie dodajemy poszczegolne t
-    for (int i = matrix[0].size(); i >= 0 ; i--) { // przydzielamy miejsce na kolejne kolumny
+    vector<double> t = build_t(x, data); // tablica przechowuja kolejne t
+    for (int i = t.size(); i >= 0 ; i--) { // przydzielamy miejsce na kolejne kolumny
         matrix.push_back(vector<double>(i, 0));
     }
     int i = 0;
     for (vector<double>& x : data) { // przypisujemy kazdemu t f(t)
         for (double& y : x) {
             (void)y;
-            matrix[1][i++] = x[0];
+            matrix[0][i++] = x[0];
         }
     }
 
-    for (unsigned int i = 2; i < matrix.size(); i++) {
+    for (unsigned int i = 1; i < matrix.size(); i++) {
         for (unsigned int j = 0; j < matrix[i].size(); j++) { // wypelniamy kolumny wartosciami czyli ilorazami roznicowymi
-            if (matrix[0][i + j - 1] != matrix[0][j])
-                matrix[i][j] = (matrix[i - 1][j + 1] - matrix[i - 1][j]) / (matrix[0][i + j - 1] - matrix[0][j]); // bierzemy to co jest po lewej i odejmujemy to co po lewej
+            if (t[i + j] != t[j])
+                matrix[i][j] = (matrix[i - 1][j + 1] - matrix[i - 1][j]) / (t[i + j] - t[j]); // bierzemy to co jest po lewej i odejmujemy to co po lewej
             else {                                                                                                // i jeden powy¿ej i dzielimy przez ró¿nicê jak we wzorze
                 int k = j;
-                while (matrix[0][k] == matrix[0][k - 1]) k--;           // jesli pierwsze i ostatnie t sa rowne to bierzemy wartosc pochodnej z
-                matrix[i][j] = data_list[k + 1 + i - 2] / fact(i - 1);  // wczesniej utworzonej listy  i dzielimy przez silnie
+                while (t[k] == t[k - 1]) k--;           // jesli pierwsze i ostatnie t sa rowne to bierzemy wartosc pochodnej z
+                matrix[i][j] = data_list[k + i] / fact(i);  // wczesniej utworzonej listy  i dzielimy przez silnie
             }
         }
     }
+
     vector<double> coeff(matrix[0].size(), 0);
     for (unsigned int i = 0;  i < coeff.size(); i++) //wypelniamy liste wspolczynnikow pierwszymi wartosciami z kazdej kolumny
-        coeff[i] = matrix[i + 1][0];
+        coeff[i] = matrix[i][0];
     for (vector<double>& x : matrix) {
         for (double y : x)
             printf("%4g", y);
         cout << endl;
     }
 
-    //vector<double> finalPoly = calculatePoly(build_t(x, data), coeff);
-    //return finalPoly;
-    return coeff;
+    for (double b : coeff)
+        cout << b << " ";
+    cout << endl;
+
+    return calculatePoly(t, coeff);
 }
 
 int main () {
@@ -105,20 +166,8 @@ int main () {
         {1, 0, 2},
         {2}
     };
-    vector<double> c = coeff(x, data); // wyliczenie wspó³czynników dla wielomianu Newtona
-    cout << "Wspolczynniki: " << endl;
-    for (double& x : c)
-        cout << x << " ";
-    cout << endl;
-    vector<double> p1{32, 0, 1};
-    vector<double> p2{1, 2, 1};
-    vector<double> d = multiPoly(p1, p2);
-    for (double& x : d)
-        cout << x << " ";
-    cout << endl;
-    d = addPoly(p1, p2);
-    for (double& x : d)
-        cout << x << " ";
-    cout << endl;
+    vector<double> p = coeff(x, data); // wyliczenie wspó³czynników dla wielomianu Newtona
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
     return 0;
 }
