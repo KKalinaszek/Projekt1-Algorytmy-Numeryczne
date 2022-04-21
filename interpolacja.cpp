@@ -49,12 +49,14 @@ vector<double> addPoly(vector<double>& p1, vector<double>& p2) {
 
 void displayPoly(vector<double>& poly) {
     int i = poly.size() - 1;
+    int skipped = 0;
     for (double a : poly) {
         if (a == 0) {
             i--;
+            skipped++;
             continue;
         }
-        if (i < (int)poly.size() - 1) {
+        if (i < (int)poly.size() - 1 - skipped) {
             if (a >= 0)
                 cout << " + ";
             else {
@@ -74,7 +76,7 @@ void displayPoly(vector<double>& poly) {
             if(a == 1)
                 cout << "x";
             else if(a == -1)
-                cout << "-x^" << i;
+                cout << "-x";
             else
                 cout << a << "x";
         }
@@ -136,7 +138,7 @@ vector<double> coeff(vector<double>& x, vector<vector<double> >& data) {
     for (unsigned int i = 1; i < matrix.size(); i++) {
         for (unsigned int j = 0; j < matrix[i].size(); j++) { // wypelniamy kolumny wartosciami czyli ilorazami roznicowymi
             if (t[i + j] != t[j])
-                matrix[i][j] = (matrix[i - 1][j + 1] - matrix[i - 1][j]) *1.0/ (double)(t[i + j] - t[j]); // bierzemy to co jest po lewej i odejmujemy to co po lewej
+                matrix[i][j] = (matrix[i - 1][j + 1] - matrix[i - 1][j]) / (t[i + j] - t[j]); // bierzemy to co jest po lewej i odejmujemy to co po lewej
             else {                                                                                                // i jeden powy¿ej i dzielimy przez ró¿nicê jak we wzorze
                 int k = j;
                 while (t[k] == t[k - 1]) k--;
@@ -149,13 +151,7 @@ vector<double> coeff(vector<double>& x, vector<vector<double> >& data) {
     }
 
     vector<double> coeff;
-    for (unsigned int i = 0;  i < matrix[0].size(); i++) {
-        if (matrix[i][0] == 0) {
-            int j = i + 1;
-            while (j < (int)matrix[0].size() && matrix[j][0] == matrix[j - 1][0])j++;
-            if (j >= (int)matrix[0].size() - 1);
-                continue;
-            }                                    //wypelniamy liste wspolczynnikow pierwszymi wartosciami z kazdej kolumny
+    for (unsigned int i = 0;  i < matrix[0].size(); i++) {                                 //wypelniamy liste wspolczynnikow pierwszymi wartosciami z kazdej kolumny
         coeff.push_back(matrix[i][0]);
     }
     /*for (vector<double>& x : matrix) {
@@ -175,16 +171,60 @@ vector<double> coeff(vector<double>& x, vector<vector<double> >& data) {
 }
 
 int main () {
-    vector<double> x {-1.0, 0, 1.0, 2.0}; // wartoœci x
+    vector<double> x {-1, 0, 1, 2}; // wartoœci x
     vector<vector<double> > data // kolejne kolumny to wartoœci dla poszczególnych x
     {
         {3, -12, 30},
         {0, 1, 0},
         {-1, -4, -6},
         {-6, -3, 12}
-
     };
     vector<double> p = coeff(x, data); // wyliczenie wspó³czynników dla wielomianu Newtona
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
+    x = {0, 1, 2};
+    data = {
+        {0, 1},
+        {1, 0, 2},
+        {2},
+    };
+    p = coeff(x, data);
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
+    x = {-1, 0};
+    data = {
+        {3, -12, 30},
+        {0}
+    };
+    p = coeff(x, data);
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
+    x = {-2, 2};
+    data = {
+        {4, -4},
+        {4, 4}
+    };
+    p = coeff(x, data);
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
+    x = {-2, 2};
+    data = {
+        {2},
+        {-2}
+    };
+    p = coeff(x, data);
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
+    x = {-2};
+    data = {
+        {2}
+    };
+    p = coeff(x, data);
     cout << "Szukany Wielomian: " << endl;
     displayPoly(p);
     return 0;
