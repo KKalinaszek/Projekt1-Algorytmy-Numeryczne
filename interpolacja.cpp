@@ -30,19 +30,19 @@ vector<double> addPoly(vector<double>& p1, vector<double>& p2) {
     vector<double> outcome(s + 1, 0);
     if (p1.size() >= p2.size()) {
         int i;
-        for (i = s; i >= s - (int)p2.size() - 1; i--)
-            outcome[i] += (p1[i] + p2[i - s + p2.size() - 1]);
-        i++;
-        for (; i >= 0; i--)
-            outcome[i] = p1[i];
+        for (i = s; i >= s - (int)p2.size() && i >= 0; i--)
+            outcome[i] = (p1[i] + p2[i - s + p2.size() - 1]);
+        if (s + 1 - (int)p2.size() > 0)
+            for (i += 1; i >= 0; i--)
+                outcome[i] = p1[i];
     }
     else {
         int i;
-        for (i = s; i >= s - (int)p1.size(); i--)
-            outcome[i] += (p2[i] + p1[i - s + p1.size() - 1]);
-        i++;
-        for (; i >= 0; i--)
-            outcome[i] = p2[i];
+        for (i = s; i >= s - (int)p1.size() && i >= 0; i--)
+            outcome[i] = (p2[i] + p1[i - s + p1.size() - 1]);
+        if (s + 1 - (int)p1.size() > 0)
+            for (i += 1; i >= 0; i--)
+                outcome[i] = p2[i];
     }
     return outcome;
 }
@@ -97,7 +97,7 @@ vector<double> calculatePoly(vector<double>& t, vector<double>& coeff) {
             curPoly = multiPoly(curPoly, tx);
         }
         i++;
-        finalPoly = addPoly(finalPoly, curPoly);
+        finalPoly = move(addPoly(finalPoly, curPoly));
     }
     return finalPoly;
 }
@@ -220,9 +220,28 @@ int main () {
     cout << "Szukany Wielomian: " << endl;
     displayPoly(p);
 
+    x = {-2, 0.5};
+    data = {
+        {4},
+        {0.25, 0.5}
+    };
+    p = coeff(x, data);
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
     x = {-2};
     data = {
         {2}
+    };
+    p = coeff(x, data);
+    cout << "Szukany Wielomian: " << endl;
+    displayPoly(p);
+
+    x = {2, 11, 7};
+    data = {
+        {5},
+        {13},
+        {19}
     };
     p = coeff(x, data);
     cout << "Szukany Wielomian: " << endl;
