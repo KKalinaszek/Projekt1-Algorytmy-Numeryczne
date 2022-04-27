@@ -295,13 +295,17 @@ int main () {
                     cout << "Nieprawidlowa wartosc" << endl;
                     break;
                 }
+                bool wasFound = false;
                 for (auto& ix : x)
                     if (ix == nx) {
                         cout << "Podana wartosc juz sie znajduje" <<endl;
+                        wasFound = true;
                         break;
                     }
-                x.push_back(nx);
-                data.push_back({fx});
+                if (!wasFound) {
+                    x.push_back(nx);
+                    data.push_back({fx});
+                }
                 break;
             }
             case 4: {
@@ -315,15 +319,18 @@ int main () {
                     break;
                 }
                 int i = 0;
+                bool wasFound = false;
                 for (auto& ix : x) {
                     if (ix == nx) {
                         data.erase(data.begin() + i);
                         x.erase(x.begin() + i);
+                        wasFound = true;
                         break;
                     }
                     i++;
                 }
-                cout << "Podany x nie zostal znaleziony" <<endl;
+                if (!wasFound)
+                    cout << "Podany x nie zostal znaleziony" <<endl;
                 break;
             }
             case 5: {
