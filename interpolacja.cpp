@@ -369,8 +369,10 @@ int main () {
                 }
                 int i = 0;
                 bool hasMore1 = true;
+                bool wasFound = false;
                 for (auto& ix : x) {
                     if (ix == nx) {
+                        wasFound = true;
                         if (data[i].size() <= 1) {
                             cout << "Usun wezel zamiast krotnosci" << endl;
                             hasMore1 = false;
@@ -381,7 +383,7 @@ int main () {
                     }
                     i++;
                 }
-                if (hasMore1)
+                if (hasMore1 && !wasFound)
                     cout << "Podany x nie zostal znaleziony" <<endl;
                 break;
             }
