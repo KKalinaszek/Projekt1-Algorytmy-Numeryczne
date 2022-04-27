@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <cctype>
 
 using namespace std;
 
@@ -170,20 +171,217 @@ vector<double> coeff(vector<double>& x, vector<vector<double> >& data) {
     return calculatePoly(t, coeff);
 }
 
-int main () {
-    vector<double> x {-1, 0, 1, 2}; // wartoœci x
-    vector<vector<double> > data // kolejne kolumny to wartoœci dla poszczególnych x
+void loadStandard(vector<double>& x, vector<vector<double> >& data) {
+    vector<double> xS {-1, 0, 1, 2};
+    vector<vector<double> > dataS
     {
         {3, -12, 30},
         {0, 1, 0},
         {-1, -4, -6},
         {-6, -3, 12}
     };
-    vector<double> p = coeff(x, data); // wyliczenie wspó³czynników dla wielomianu Newtona
+    x = xS;
+    data = dataS;
+}
+
+void showTable(vector<double>& x, vector<vector<double> >& data) {
+    if (x.size() == 0) return;
+    cout << "----------";
+    for (unsigned int i = 0; i < data.size(); i++)
+        cout << "-------";
+    cout << endl;
+
+    printf("|   x    ");
+    for (auto& xc : x)
+        printf("| %4g ", xc);
+    printf("|\n");
+    unsigned int height = 0;
+    for (auto& x : data) {
+        if (x.size() > height)
+            height = x.size();
+    }
+
+    cout << "|--------|";
+    for (unsigned int i = 0; i < data.size(); i++)
+        cout << "------|";
+    cout << endl;
+
+    for (unsigned int i = 0; i < height; i++) {
+        switch (i) {
+            case 0: {
+                printf("| f(x)   ");
+                break;
+            }
+            case 1: {
+                printf("| f\'(x)  ");
+                break;
+            }
+            case 2: {
+                printf("| f\'\'(x) ");
+                break;
+            }
+            default: {
+                printf("|f^(%d)(x)", i);
+            }
+        }
+
+        for (int unsigned j = 0; j < data.size(); j++) {
+            if (data[j].size() < i + 1) {
+                cout << "|      ";
+                continue;
+            }
+            printf("| %4g ", data[j][i]);
+        }
+        cout << '|' << endl;
+    }
+
+    cout << "----------";
+    for (unsigned int i = 0; i < data.size(); i++)
+        cout << "-------";
+    cout << endl;
+}
+
+void calculate(vector<double>& x, vector<vector<double> >& data) {
+    vector<double> p = coeff(x, data);
+    cout << endl;
     cout << "Szukany Wielomian: " << endl;
     displayPoly(p);
+}
 
-    x = {0, 1, 2};
+int main () {
+    vector<double> x {-1, 0, 1, 2};
+    vector<vector<double> > data
+        {
+        {3, -12, 30},
+        {0, 1, 0},
+        {-1, -4, -6},
+        {-6, -3, 12}
+    };
+    cout << "Program do interpolacji Hermite'a" << endl;
+    int option = -1;
+    while (true) {
+        cout << endl <<
+        "(1) Wykonaj interpolacje dla podanych danych\n"
+        "(2) Zaladuj dane z zadania\n"
+        "(3) Dodaj wezel\n"
+        "(4) Usun wezel\n"
+        "(5) Dodaj krotnosc dla podanego x\n"
+        "(6) Usun krotnosc dla podanego x\n"
+        <<endl;
+        showTable(x, data);
+        cin >> option;
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(256,'\n');
+            cout << "Nieprawidlowa wartosc" << endl;
+            continue;
+        }
+        switch (option) {
+            case 1: {
+                calculate(x, data);
+                break;
+            }
+            case 2: {
+                loadStandard(x, data);
+                break;
+            }
+            case 3: {
+                double nx, fx;
+                cout << "Podaj 'x' i 'f(x)'" << endl;
+                cin >> nx >> fx;
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(256,'\n');
+                    cout << "Nieprawidlowa wartosc" << endl;
+                    break;
+                }
+                for (auto& ix : x)
+                    if (ix == nx) {
+                        cout << "Podana wartosc juz sie znajduje" <<endl;
+                        break;
+                    }
+                x.push_back(nx);
+                data.push_back({fx});
+                break;
+            }
+            case 4: {
+                double nx;
+                cout << "Podaj 'x' do usuniecia" << endl;
+                cin >> nx;
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(256,'\n');
+                    cout << "Nieprawidlowa wartosc" << endl;
+                    break;
+                }
+                int i = 0;
+                for (auto& ix : x) {
+                    if (ix == nx) {
+                        data.erase(data.begin() + i);
+                        x.erase(x.begin() + i);
+                        break;
+                    }
+                    i++;
+                }
+                cout << "Podany x nie zostal znaleziony" <<endl;
+                break;
+            }
+            case 5: {
+                double nx, fx;
+                cout << "Podaj 'x' i wartosc kolejnej pochodnej" << endl;
+                cin >> nx >> fx;
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(256,'\n');
+                    cout << "Nieprawidlowa wartosc" << endl;
+                    break;
+                }
+                int i = 0;
+                bool wasFound = false;
+                for (auto& ix : x) {
+                    if (ix == nx) {
+                        data[i].push_back(fx);
+                        wasFound = true;
+                        break;
+                    }
+                    i++;
+                }
+                if (!wasFound)
+                    cout << "Podany x nie zostal znaleziony" <<endl;
+                break;
+            }
+            case 6: {
+                double nx;
+                cout << "Podaj 'x' do usuniecia krotnosci" << endl;
+                cin >> nx;
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(256,'\n');
+                    cout << "Nieprawidlowa wartosc" << endl;
+                    break;
+                }
+                int i = 0;
+                bool hasMore1 = true;
+                for (auto& ix : x) {
+                    if (ix == nx) {
+                        if (data[i].size() <= 1) {
+                            cout << "Usun wezel zamiast krotnosci" << endl;
+                            hasMore1 = false;
+                            break;
+                        }
+                        data[i].erase(data[i].end() - 1);
+                        break;
+                    }
+                    i++;
+                }
+                if (hasMore1)
+                    cout << "Podany x nie zostal znaleziony" <<endl;
+                break;
+            }
+        }
+    }
+
+    /*x = {0, 1, 2};
     data = {
         {0, 1},
         {1, 0, 2},
@@ -245,6 +443,6 @@ int main () {
     };
     p = coeff(x, data);
     cout << "Szukany Wielomian: " << endl;
-    displayPoly(p);
+    displayPoly(p);*/
     return 0;
 }
