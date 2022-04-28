@@ -267,6 +267,8 @@ int main () {
         "(4) Usun wezel\n"
         "(5) Dodaj krotnosc dla podanego x\n"
         "(6) Usun krotnosc dla podanego x\n"
+        "(7) Wyczysc zawartosc\n"
+        "(8) Wyjdz\n"
         <<endl;
         showTable(x, data);
         cin >> option;
@@ -354,7 +356,7 @@ int main () {
                     i++;
                 }
                 if (!wasFound)
-                    cout << "Podany x nie zostal znaleziony" <<endl;
+                    cout << "Podany x nie zostal znaleziony" << endl;
                 break;
             }
             case 6: {
@@ -384,9 +386,16 @@ int main () {
                     i++;
                 }
                 if (hasMore1 && !wasFound)
-                    cout << "Podany x nie zostal znaleziony" <<endl;
+                    cout << "Podany x nie zostal znaleziony" << endl;
                 break;
             }
+            case 7: {
+                x.clear();
+                data.clear();
+                break;
+            }
+            case 8:
+                return 0;
         }
     }
 
