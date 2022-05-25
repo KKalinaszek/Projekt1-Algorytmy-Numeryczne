@@ -56,6 +56,7 @@ double secantMethod(Polynomian p, double a, double b, double ex, int& iter, doub
         x_k1 = x;
         x = x_k1 - (p.value(x_k1) * (x_k1 - x_k2)) / (p.value(x_k1) - p.value(x_k2));
         iter++;
+    //cout << x << " " << x_k1 << " " << x_k2 << " " << abs(x_k1 - x) << " " << p.value(x) << endl;
     }
     error = abs(x_k1 -x);
     return x;
@@ -73,7 +74,7 @@ void solve(Polynomian p, double a, double b, double e) {
     else {
         cout << "Metoda polowienia wymaga aby wartosci na krancach przedzialow mialy rozne znaki" << endl;
         if (p.coefficients == vector<double>{1, 0, -22, 3})
-            cout << "Miejsca zerowe sa w przedzialach <-8;-2>; <-2;2>; <2;8>" << endl;
+            cout << "Miejsca zerowe sa w przedzialach <-6;-2>; <-2;2>; <2;6>" << endl;
         cout << endl;
     }
     iter = 0;
@@ -95,45 +96,51 @@ int main () {
         "(2) Dowolny wielomian\n"
         "(3) Wyjscie\n";
         cin >> option;
+        if (!cin.fail()) {
+            cin.clear();
+            cin.ignore(256,'\n');
+            switch (option) {
+                case 3: {return 0;}
+                case 2: {
+                    cout << "Podaj wspolczynniki(w jednej linii, oddzielone spacjami): " << endl;
+                    vector<double> vc;
+                    double c;
+                    string line;
+                    getline(cin, line);
+                    istringstream iss(line);
+                    while (iss >> c)
+                        if (!iss.fail())
+                            vc.push_back(c);
+                    p = Polynomian(vc);
+                    break;
+                }
+                case 1: {
+                    p = p0;
+                }
+            }
+            cout << "Podaj krance przedzialu <a, b>: " << endl;
+            cin >> a >> b;
+            while (cin.fail()) {
+                cin.clear();
+                cin.ignore(256,'\n');
+                cout << "Nieprawidlowa wartosc, podaj jeszcze raz" << endl;
+                cin >> a >> b;
+            }
+            cin.clear();
+            cin.ignore(256,'\n');
+            cout << "Podaj dokladnosc(ilosc miejsc po przecinku): " << endl;
+            cin >> c;
+            while (cin.fail()) {
+                cin.clear();
+                cin.ignore(256,'\n');
+                cout << "Nieprawidlowa wartosc, podaj jeszcze raz" << endl;
+                cin >> c;
+            }
+            e = pow(10, -c);
+            solve(p, a, b, e);
+        }
         cin.clear();
         cin.ignore(256,'\n');
-        switch (option) {
-            case 3: {return 0;}
-            case 2: {
-                cout << "Podaj wspolczynniki(w jednej linii, oddzielone spacjami): " << endl;
-                vector<double> vc;
-                double c;
-                string line;
-                getline(cin, line);
-                istringstream iss(line);
-                while (iss >> c)
-                    if (!iss.fail())
-                        vc.push_back(c);
-                p = Polynomian(vc);
-                break;
-            }
-            case 1: {
-                p = p0;
-            }
-        }
-        cout << "Podaj krance przedzialu <a, b>: " << endl;
-        cin >> a >> b;
-        if (cin.fail()) {
-            cin.clear();
-            cin.ignore(256,'\n');
-            cout << "Nieprawidlowa wartosc, podaj jeszcze raz" << endl;
-            cin >> a >> b;
-        }
-        cout << "Podaj dokladnosc(ilosc miejsc po przecinku): " << endl;
-        cin >> c;
-        if (cin.fail()) {
-            cin.clear();
-            cin.ignore(256,'\n');
-            cout << "Nieprawidlowa wartosc, podaj jeszcze raz" << endl;
-            cin >> c;
-        }
-        e = pow(10, -c);
-        solve(p, a, b, e);
     }
     return 0;
 }
