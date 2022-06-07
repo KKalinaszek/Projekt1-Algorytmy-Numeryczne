@@ -142,9 +142,7 @@ class equationsMatrix : public matrix<T> {
         for (unsigned int i = 0; i < this->n; i++) {
             if (this->contents[i][i] == 0) {
                 unsigned int j = 0;
-                while ((this->contents[j][i] == 0 || this->contents[i][j] == 0) && j < this->n - 1) {
-                    if (j++ == i) continue;
-                }
+                while ((this->contents[j][i] == 0 || this->contents[i][j] == 0) && j < this->n - 1) j++;
                 swap(this->contents[i], this->contents[j]);
             }
         }
