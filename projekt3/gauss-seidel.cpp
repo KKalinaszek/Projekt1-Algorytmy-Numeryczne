@@ -4,8 +4,12 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 using namespace std;
+
+#define MAX_ITER 10000
+//#define DEBUG
 
 template<typename T>
 class matrix {
@@ -148,14 +152,39 @@ class equationsMatrix : public matrix<T> {
         }
     }
 
-    vector<T> solve(int iter) {
+    vector<T> solve(int& iter, bool& isConvergent) {
         if (this->n != this->m) {
             cerr << "Macierz nie jest kwadratowa" << endl;
             return x;
         }
         x = vector<T>(this->n, 0);
-        for (int i = 0; i < iter; i++)
+        vector<T> prevSolutions(x);
+        int errorCheck = 0;
+        T errorCheckVectorPrev = 0;
+        for (int i = 0; i < MAX_ITER; i++) {
             this->makeIter();
+            T errorCheckVector = 0;
+            T maxError = 0;
+            for (unsigned int j = 0; j < this->n; j++) {
+                errorCheckVector += fabs(x[j] - prevSolutions[j]);
+                if (fabs(x[j] - prevSolutions[j]) > maxError)
+                    maxError = fabs(x[j] - prevSolutions[j]);
+            }
+            if (errorCheckVector > errorCheckVectorPrev)
+                errorCheck++;
+
+            #ifdef DEBUG
+                cout << errorCheck << " " << errorCheckVector << "\n";
+            #endif
+
+            if (errorCheck >= 2 || maxError < 0.000001) {
+                iter = i + 1;
+                if (errorCheck >= 2) isConvergent = false;
+                break;
+            }
+            errorCheckVectorPrev = errorCheckVector;
+            prevSolutions = x;
+        }
         return x;
     }
 
@@ -193,28 +222,31 @@ void equationsMatrix<T>::makeIter() {
 }
 
 template<typename T>
-void execute(equationsMatrix<T>& testMatrix, int iterations) {
+void execute(equationsMatrix<T>& testMatrix) {
+    bool isConvergent = true;
+    int iterations;
     cout << "\nUklad rownan: " << endl;
     testMatrix.display();
     testMatrix.displayMatrix();
     int i = 0;
     cout << "Rozwiazania: " << endl;
-    for (auto x : testMatrix.solve(iterations))
+    for (auto x : testMatrix.solve(iterations, isConvergent))
         cout << setw(5) << "x" << ++i << " = " << setw(3) << x << endl;
     cout << "Wykonano " << iterations << " iteracji" << endl;
+    if (!isConvergent) cout << "Wyniki prawdopodobnie nie sa zbiezne\n";
 }
 
 int main() {
     equationsMatrix<double> testMatrix;
-    int numberOfIterations;
+    /*int numberOfIterations;
     do {
         cin.clear();
         cout << "Ustaw ilosc iteracji: \n";
         cin >> numberOfIterations;
         cin.ignore(256, '\n');
-    } while (cin.fail());
-    testMatrix.loadFromFile("test.txt");
-    execute(testMatrix, numberOfIterations);
+    } while (cin.fail());*/
+    testMatrix.loadFromFile("test1.txt");
+    execute(testMatrix);
     int option;
     while (true) {
         cout << "\nCzy policzyc dla nowego parametru nad przekatna? <1, 0>\n";
@@ -229,7 +261,7 @@ int main() {
                 cin.ignore(256, '\n');
             } while (cin.fail());
             testMatrix.setDiagonal(newDiagValue, 1);
-            execute(testMatrix, numberOfIterations);
+            execute(testMatrix);
         }
         else
             return 0;
